@@ -1,5 +1,6 @@
 #include <arpa/inet.h>
 #include <cassert>
+#include <cstddef>
 #include <cstdlib>
 #include <fcntl.h>
 #include <netinet/in.h>
@@ -41,8 +42,11 @@ int main(int argc, char const *argv[])
         int pipefd[2];
         ret = pipe(pipefd); // 创建管道
         assert(ret != -1);
+        // 将connfd上流入的客户数据定向到管道里面
         ret = splice(connfd, NULL, pipefd[1], NULL, 32768, SPLICE_F_MORE | SPLICE_F_MOVE);
         assert(ret != -1);
+        // 将管道的输出定向到connfd客户连接文件描述符
+        ret = splice(pipefd[0], NULL, connfd, NULL, 32768, SPLICE_F_MORE | SPLICE_F_MOVE);
         close(connfd);
     }
     close(sockfd);

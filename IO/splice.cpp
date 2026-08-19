@@ -10,19 +10,12 @@
 
 int main(int argc, char const *argv[])
 {
-    if (argc <= 3) {
+    if (argc <= 2) {
         return -1;
     }
     const char* ip = argv[1];
     int port = atoi(argv[2]);
-    const char* path_name = argv[3];
-
-    int filefd = open(path_name, O_RDONLY);
-    assert(filefd > 0);
-
-    struct stat stat_buf;
-    fstat(filefd, &stat_buf);
-
+    
     sockaddr_in address;
     bzero(&address, sizeof(address));
     address.sin_family = AF_INET;
@@ -40,10 +33,16 @@ int main(int argc, char const *argv[])
 
     sockaddr_in client;
     socklen_t len = sizeof(client);
-
     int connfd = accept(sockfd, (sockaddr*)&client, &len);
-    if (connfd >= 0) {
-        sendfile(connfd, filefd, NULL, stat_buf.st_size);
+    if (connfd < 0) {
+        return -1;
+    }
+    else {
+        int pipefd[2];
+        ret = pipe(pipefd); // 创建管道
+        assert(ret != -1);
+        ret = splice(connfd, NULL, pipefd[1], NULL, 32768, SPLICE_F_MORE | SPLICE_F_MOVE);
+        assert(ret != -1);
         close(connfd);
     }
     close(sockfd);

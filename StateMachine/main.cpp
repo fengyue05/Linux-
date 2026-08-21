@@ -24,17 +24,15 @@ int main(int argc, char const *argv[])
 
     int listenfd = ::socket(AF_INET, SOCK_STREAM, 0);
     assert(listenfd >= 0);
+    
     int ret = bind(listenfd, (sockaddr*)&address, sizeof(address));
     assert(ret != -1);
 
     ret = listen (listenfd, 128);
     assert(ret != -1);
-
-
     sockaddr_in client;
     socklen_t len = sizeof(client);
     int fd = accept(listenfd, (sockaddr*)&client, &len);
-
     if (fd < 0) {
         perror("accept error is:");
         return -1;

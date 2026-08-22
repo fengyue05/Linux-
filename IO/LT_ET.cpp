@@ -33,6 +33,7 @@ void addFd(int epollfd, int fd, bool enable_et) {
         event.events |= EPOLLET;
     }
     epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &event);
+    setNoBlocking(fd);
 }
 
 // LT工作流程
